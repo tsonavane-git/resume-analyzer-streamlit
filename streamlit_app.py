@@ -2,7 +2,7 @@ import streamlit as st
 import fitz  # PyMuPDF
 from transformers import pipeline
 
-st.set_page_config(page_title="Smart Resume Analyzer", layout="centered")
+st.set_page_config(page_title="xxxSmart Resume Analyzer", layout="centered")
 
 # Load small LLM
 @st.cache_resource
