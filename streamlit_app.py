@@ -1,59 +1,54 @@
 import streamlit as st
 import fitz  # PyMuPDF
-import openai
-import os
+from transformers import pipeline
 
-# === OpenAI API Key ===
-openai.api_key = st.secrets.get("OPENAI_API_KEY", "")
+# === Load Hugging Face model once ===
+@st.cache_resource
+def load_model():
+    return pipeline("text-generation", model="mistralai/Mistral-7B-Instruct-v0.1", max_new_tokens=512)
+
+llm = load_model()
 
 st.set_page_config(page_title="Smart Resume Analyzer", layout="centered")
 
-st.title("📄 Smart Resume Analyzer")
-st.write("Upload your resume and get instant feedback based on the job title you specify.")
+st.title("📄 Smart Resume Analyzer (Offline LLM Version)")
+st.write("Upload your resume and get instant feedback using a free local LLM.")
 
-# === Upload Resume ===
+# === Upload PDF Resume ===
 uploaded_file = st.file_uploader("Upload your resume (PDF)", type=["pdf"])
-job_title = st.text_input("Target Job Title (e.g., Data Scientist)")
+job_title = st.text_input("Target Job Title (e.g., Software Engineer)")
 
 if uploaded_file and job_title:
-    with st.spinner("Reading your resume..."):
+    with st.spinner("Extracting resume content..."):
         doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
         resume_text = "\n".join(page.get_text() for page in doc)
 
-    st.success("Resume uploaded and parsed successfully!")
+    st.success("Resume uploaded and parsed!")
 
-    # === Prompt the LLM ===
     if st.button("🔍 Analyze Resume"):
-        with st.spinner("Analyzing with LLM..."):
-            prompt = f"""
-You are a resume review assistant.
+        with st.spinner("Generating analysis..."):
+            prompt = f"""### Instruction:
+You are a resume review expert.
 
-Evaluate this resume for the job title: {job_title}.
-Provide:
-1. Overall summary
+Analyze the following resume for the job title "{job_title}". Provide:
+1. Summary
 2. Strengths
 3. Weaknesses
-4. Specific improvement suggestions
+4. Suggestions for improvement
 
-Resume Content:
+### Resume:
 {resume_text}
-            """
 
+### Response:
+"""
             try:
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.7,
-                    max_tokens=800,
-                )
+                response = llm(prompt)[0]['generated_text'].split("### Response:")[-1].strip()
                 st.subheader("📊 Analysis Result")
-                st.write(response['choices'][0]['message']['content'])
+                st.write(response)
             except Exception as e:
-                st.error(f"Error: {str(e)}")
-
+                st.error(f"LLM Error: {str(e)}")
 else:
     st.info("Please upload a resume and enter a job title.")
 
-# === Footer ===
 st.markdown("---")
-st.caption("Built with ❤️ using Streamlit and OpenAI")
+st.caption("No API key needed. Powered by Hugging Face + Streamlit.")
