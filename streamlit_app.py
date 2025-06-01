@@ -1,6 +1,7 @@
 import streamlit as st
 import fitz  # PyMuPDF
 from transformers import pipeline
+st.set_page_config(page_title="Smart Resume Analyzer", layout="centered")
 
 # Load small LLM
 @st.cache_resource
@@ -9,7 +10,6 @@ def load_model():
 
 llm = load_model()
 
-st.set_page_config(page_title="Smart Resume Analyzer", layout="centered")
 st.title("📄 Smart Resume Analyzer (Free LLM Version)")
 
 st.write("Upload a resume and get instant insights, no API key required!")
