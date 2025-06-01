@@ -11,7 +11,7 @@ def load_model():
 
 llm = load_model()
 
-st.title("📄 Smart Resume & LinkedIn Analyzer (No API Key)")
+st.title("📄 xxxSmart Resume & LinkedIn Analyzer (No API Key)")
 
 tab1, tab2 = st.tabs(["📄 Resume (PDF)", "🔗 LinkedIn Profile (Text)"])
 
